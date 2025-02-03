@@ -1,0 +1,572 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Korean Flashcards</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="flashcard-container">
+        <div class="flashcard" id="flashcard" onclick="flipCard()">
+            <div class="front">
+                <h2 id="word">안녕하세요 (Annyeonghaseyo)</h2>
+            </div>
+            <div class="back">
+                <p id="meaning">Hello</p>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button class="btn known" onclick="markKnown()">✔️</button>
+            <button class="btn unknown" onclick="nextCard()">❌</button>
+        </div>
+    </div>
+
+    <div class="gif-container">
+        <img src="https://media3.giphy.com/media/TEd7GC4WDk3ZZb4JFA/source.gif" 
+             alt="Cute Animated Bunny" 
+             class="animated-bunny" />
+    </div>
+
+    <!-- Button to toggle the visibility of learned words -->
+    <button class="toggle-learned" onclick="toggleLearnedWords()">Show/Hide Learned Words</button>
+
+    <!-- Section for learned words, hidden by default -->
+    <div class="learned-words" id="learnedWords">
+        <h3>Learned Words:</h3>
+        <ul id="learnedList"></ul>
+    </div>
+
+    
+
+    <div class="custom-flashcards">
+        <h2>Your Custom Flashcards</h2>
+        <div id="customCards"></div>
+    
+        <h3>Add Your Own Flashcard</h3>
+        <input type="text" id="customWord" placeholder="Enter Korean Word">
+        <input type="text" id="customMeaning" placeholder="Enter Meaning">
+        <button onclick="addCustomFlashcard()">Add</button>
+    </div>
+    
+    <script src="script.js"></script>   
+
+</body> 
+</html>
+
+<style>
+
+
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color:#672f81;
+    overflow-y: auto;
+    text-align: center;
+    overflow-y: auto;
+}
+
+.flashcard-container {
+    perspective: 870px;
+    margin-top: 25px;
+    position: relative;
+    z-index: 1; /* Ensures that flashcards appear above the learned words */
+    scroll-padding-top: 50px;
+    margin-top: 150px;
+}
+
+.flashcard {
+    width: 250px;
+    height: 250px;
+    background-color: rgb(218, 45, 114);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Smooth flying effect */
+    cursor: pointer;
+    position: relative;
+}
+
+.flashcard.flipped {
+    transform: rotateY(180deg);
+}
+
+/* FRONT & BACK SIDES */
+.flashcard .front, 
+.flashcard .back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    backface-visibility: hidden; /* Ensures only one side is visible at a time */
+}
+
+/* FRONT SIDE */
+.flashcard .front {
+    background-color:white;
+    border-radius : 15px;
+}
+
+/* BACK SIDE */
+.flashcard .back {
+    transform: rotateY(180deg);
+    background-color: white;
+    border-radius: 15px;
+    color:black;
+}
+
+/* Ensuring text is centered and doesn't overflow */
+.flashcard .front h2, 
+.flashcard .back h2 {
+    margin: 0;  /* Remove unwanted margins */
+    padding: 10px;  /* Add slight padding */
+    max-width: 90%;  /* Prevents text from overflowing */
+    word-wrap: break-word;  
+    overflow-wrap: break-word;  
+    text-align: center;
+}
+
+/* TEXT STYLING */
+h2 {
+    font-size: 24px;
+    color: #000000;
+}
+
+p {
+    font-size: 18px;
+    color: #000000;
+}
+
+/* BUTTONS SECTION */
+.buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center; /* Centers buttons */
+    align-items: center;
+    gap: 20px; /* Adjust spacing between buttons */
+}
+
+/* BUTTON STYLING */
+.btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 24px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.known {
+    background-color: #000000;
+    color: white;
+}
+
+.unknown {
+    background-color: #05020b;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.8;
+    background-color: rgb(151, 148, 148);
+}
+
+/* LEARNED WORDS SECTION - Positioned on the left side */
+.learned-words {
+    position: fixed;
+    top: 50%;
+    left: 10px;  /* Position it on the left */
+    transform: translateY(-50%);
+    background-color: #c1aaaa;
+    padding: 10px;
+    border-radius: 10px;
+    width: 250px;
+    max-height: 200px;  /* Set a max height */
+    overflow-y: auto;   /* Enable vertical scrolling */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Optional: adds a shadow for better visibility */
+    z-index: 10; /* Ensure it stays on top of other content */
+    display: none;  /* Hidden by default */
+}
+
+.toggle-learned {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #c297c6;
+    color: rgb(3, 0, 0);
+    border: none;
+    border-radius: 90px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 200px;
+    margin-left: 55px;
+}
+
+.toggle-learned:hover {
+    opacity: 0.8;
+    background-color:#c297c6 ;
+}
+
+/* GIF ANIMATION */
+.gif-container {
+    margin-top: 20px;
+}
+
+.animated-bunny {
+    width:  197px;
+    height: 197px;
+    animation: bounce 1s infinite;
+}
+
+/* Bouncing animation */
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+
+.add-flashcard {
+    margin-top: 20px;
+    padding: 10px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 250px;
+}
+
+.add-flashcard input {
+    width: 90%;
+    padding: 5px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.add-flashcard button {
+    background: #672f81;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.add-flashcard button:hover {
+    opacity: 0.8;
+}   
+
+.custom-flashcards {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 300px;
+    margin: auto;
+}
+
+.custom-flashcards input {
+    width: 90%;
+    padding: 8px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.custom-flashcards button {
+    background: #741776;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.custom-flashcards button:hover {
+    background: #6b076e;
+}
+
+#customCards {
+    margin-top: 15px;
+}
+
+
+</style>
+
+<script>
+
+
+const flashcards = [
+    { word: '가다 (Gada)', meaning: 'To Go' },
+    { word: '오다 (Oda)', meaning: 'To Come' },
+    { word: '먹다 (Meokda)', meaning: 'To Eat' },
+    { word: '마시다 (Masida)', meaning: 'To Drink' },
+    { word: '일어나다 (Ireonada)', meaning: 'To Wake up' },
+    { word: '자다 (Jada)', meaning: 'To Sleep' },
+    { word: '일하다 (Ir-hada)', meaning: 'To Work' },
+    { word: '이야기하다 (Iyagi-hada)', meaning: 'To Talk' },
+    { word: '듣다 (Deutta)', meaning: 'To Listen' },
+    { word: '말하다 (Mar-hada)', meaning: 'To Speak' },
+    { word: '만나다 (Mannada)', meaning: 'To Meet' },
+    { word: '노래하다 (Norae-hada)', meaning: 'To Sing' },
+    { word: '춤추다 (Chumchhuda)', meaning: 'To Dance' },
+    { word: '보다 (Boda)', meaning: 'To See, Watch' },
+    { word: '좋아하다 (Joa-hada)', meaning: 'To Like' },
+    { word: '사랑하다 (Sarang-hada)', meaning: 'To Love' },
+    { word: '싫어하다 (Sireo-hada)', meaning: 'To Dislike' },
+    { word: '읽다 (Ikda)', meaning: 'To Read' },
+    { word: '쓰다 (Seuda)', meaning: 'To Write' },
+    { word: '공부하다 (Gongbu-hada)', meaning: 'To Study' },
+    { word: '자동차 (Jadongcha)', meaning: 'Vehicle' },
+    { word: '택시 (Taeksi)', meaning: 'Taxi' },
+    { word: '버스 (Beoseu)', meaning: 'Bus' },
+    { word: '지하철 (Jihacheol)', meaning: 'Metro' },
+    { word: '기차 (Gicha)', meaning: 'Train' },
+    { word: '비행기 (Bihaengi)', meaning: 'Airplane' },
+    { word: '타다 (Tada)', meaning: 'Ride, Take' },
+    { word: '갈아타다 (Garatada)', meaning: 'Change' },
+    { word: '내리다 (Naerida)', meaning: 'To Get off' },
+    { word: '정류장 (Jeongnyujang)', meaning: 'Stop, Stand' },
+    { word: '역 (Yeok)', meaning: 'Station' },
+    { word: '공항 (Gonghang)', meaning: 'Airport' },
+    { word: '표 (Pyo)', meaning: 'Ticket' },
+    { word: '요금 (Yogeum)', meaning: 'Fare' },
+    { word: '길 (Gil)', meaning: 'Road, Street' },
+    { word: '교통 (Gyothong)', meaning: 'Traffic' },
+    { word: '출발하다 (Chulbal-hada)', meaning: 'Depart' },
+    { word: '도착하다 (Dochak-hada)', meaning: 'Arrive' },
+    { word: '비 (Bi)', meaning: 'Rain' },
+    { word: '눈 (Nun)', meaning: 'Snow' },
+    { word: '안개 (Angae)', meaning: 'Fog' },
+    { word: '번개 (Beongae)', meaning: 'Lightning' },
+    { word: '무지개 (Mujigae)', meaning: 'Rainbow' },
+    { word: '바람 (Baram)', meaning: 'Wind' },
+    { word: '태풍 (Taepung)', meaning: 'Typhoon' },
+    { word: '햇빛 (Haeppit)', meaning: 'Sunlight' },
+    { word: '달빛 (Dalbit)', meaning: 'Moonlight' },
+    { word: '월요일 (Woryo-il)', meaning: 'Monday' },
+    { word: '화요일 (Hwayo-il)', meaning: 'Tuesday' },
+    { word: '수요일 (Suyo-il)', meaning: 'Wednesday' },
+    { word: '목요일 (Mogyo-il)', meaning: 'Thursday' },
+    { word: '금요일 (Gumyo-il)', meaning: 'Friday' },
+    { word: '토요일 (Doyo-il)', meaning: 'Saturday' },
+    { word: '일요일 (Iryo-il)', meaning: 'Sunday' },
+    { word: '일월 (Ir-wol)', meaning: 'January' },
+    { word: '이월 (I-wol)', meaning: 'February' },
+    { word: '삼월 (Sam-wol)', meaning: 'March' },
+    { word: '사월 (Sa-wol)', meaning: 'April' },
+    { word: '오월 (O-wol)', meaning: 'May' },
+    { word: '유월 (Yu-wol)', meaning: 'June' },
+    { word: '칠월 (Chir-wol)', meaning: 'July' },
+    { word: '팔월 (Par-wol)', meaning: 'August' },
+    { word: '구월 (Gu-wol)', meaning: 'September' },
+    { word: '시월 (Shi-wol)', meaning: 'October' },
+    { word: '십일월 (Shib-irwol)', meaning: 'November' },
+    { word: '십이월 (Shib-i-wol)', meaning: 'December' },
+    { word: '어제 (Eoje)', meaning: 'Yesterday' },
+    { word: '오늘 (Oneul)', meaning: 'Today' },
+    { word: '내일 (Naeil)', meaning: 'Tomorrow' },
+    { word: '모레 (More)', meaning: 'Day after tomorrow' },
+    { word: '평일 (Pyeongil)', meaning: 'Weekday' },
+    { word: '주말 (Jumal)', meaning: 'Weekend' },
+    { word: '매일 (Maeil)', meaning: 'Everyday' },
+    { word: '매주 (Maeju)', meaning: 'Every week' },
+    { word: '매달 (Maedal)', meaning: 'Every month' },
+    { word: '매년 (Maenyeon)', meaning: 'Every year' },
+    { word: '지금 (Jigeum)', meaning: 'Now' },
+    { word: '요즘 (Yojeum)', meaning: 'These days' },
+    { word: '최근에 (Chwegeune)', meaning: 'Recently' },
+    { word: '항상 (Hangsang)', meaning: 'Always' },
+    { word: '자주 (Jaju)', meaning: 'Often' },
+    { word: '가끔 (Gakkeum)', meaning: 'Sometimes' },
+    { word: '아까 (Akka)', meaning: 'A while ago' },
+    { word: '이따가 (Ittaga)', meaning: 'A little later' },
+    { word: '나중에 (Najunge)', meaning: 'Later' },
+    { word: '지난주 (Chinan-chu)', meaning: 'Last Week' },
+    { word: '이번주 (Ibeon-chu)', meaning: 'This Week' },
+    { word: '다음주 (Thaeum-chu)', meaning: 'Next Week' },
+    { word: '지난달 (Chinan-dal)', meaning: 'Last Month' },
+    { word: '이번달 (Ibeon-dal)', meaning: 'This Month' },
+    { word: '다음달 (Thaeum-dal)', meaning: 'Next Month' },
+    { word: '작년 (Chang-nyeon)', meaning: 'Last Year' },
+    { word: '올해 (Orhae)', meaning: 'This Year' },
+    { word: '내년 (Nae-nyeon)', meaning: 'Next Year' }
+];
+
+
+let currentCardIndex = 0;
+let learnedWords = [];
+
+function flipCard() {
+    const flashcardElement = document.getElementById('flashcard');
+    flashcardElement.classList.toggle('flipped');
+}
+
+function nextCard() {
+    isFlipped = false;
+    document.getElementById('flashcard').classList.remove('flipped');
+
+    // Move to the next card if there are still flashcards left
+    if (flashcards.length > 0) {
+        currentCardIndex = (currentCardIndex + 1) % flashcards.length;
+        updateFlashcard();
+    } else {
+        // If no more flashcards, reset and show "All learned!"
+        document.getElementById('word').textContent = "All words learned!";
+        document.getElementById('meaning').textContent = "";
+    }
+}
+
+function markKnown() {
+    const currentWord = flashcards[currentCardIndex];
+
+    // Add word to the learnedWords list if it's not already included
+    if (!learnedWords.includes(currentWord.word)) {
+        learnedWords.push(currentWord.word);
+        updateLearnedWords();
+    }
+
+    // Remove the word from flashcards
+    flashcards.splice(currentCardIndex, 1);
+
+    // If no more flashcards left, reset and show the "All learned!" message
+    if (flashcards.length === 0) {
+        nextCard();
+    } else {
+        // Update the flashcard with the next card
+        updateFlashcard();
+    }
+}
+
+function updateFlashcard() {
+    if (flashcards.length > 0) {
+        // Update the content of the current flashcard
+        document.getElementById('word').textContent = flashcards[currentCardIndex].word;
+        document.getElementById('meaning').textContent = flashcards[currentCardIndex].meaning;
+    }
+}
+
+function updateLearnedWords() {
+    const list = document.getElementById('learnedList');
+    list.innerHTML = '';  // Clear the list before updating it
+
+    // Display learned words
+    learnedWords.forEach(word => {
+        const li = document.createElement('li');
+        li.textContent = word;
+        list.appendChild(li);
+    });
+}
+
+// Function to toggle the visibility of the learned words section
+function toggleLearnedWords() {
+    const learnedWordsSection = document.getElementById('learnedWords');
+    learnedWordsSection.style.display = (learnedWordsSection.style.display === 'none' || learnedWordsSection.style.display === '') ? 'block' : 'none';
+}
+function addFlashcard() {
+    const newWord = document.getElementById('newWord').value.trim();
+    const newMeaning = document.getElementById('newMeaning').value.trim();}
+
+    if (newWord === '' || newMeaning === '') {
+        alert('Please enter both the word and its meaning.');
+        return;
+    }
+
+    // Add new flashcard to the list
+    flashcards.push({ word: newWord, meaning: newMeaning });
+
+    // Clear input fields
+    document.getElementById('newWord').value = '';
+    document.getElementById('newMeaning').value = '';
+
+    alert('Flashcard added successfully!');
+    let customFlashcards = [];
+
+function addCustomFlashcard() {
+    const word = document.getElementById('customWord').value.trim();
+    const meaning = document.getElementById('customMeaning').value.trim();
+
+    if (word === '' || meaning === '') {
+        alert('Please enter both the word and its meaning.');
+        return;
+    }
+
+    // Store the new flashcard
+    customFlashcards.push({ word, meaning });
+
+    // Display the new flashcard
+    displayCustomFlashcards();
+
+    // Clear input fields
+    document.getElementById('customWord').value = '';
+    document.getElementById('customMeaning').value = '';
+}
+
+function displayCustomFlashcards() {
+    const container = document.getElementById('customCards');
+    container.innerHTML = ''; // Clear previous flashcards
+
+    customFlashcards.forEach((card, index) => {
+        const cardElement = document.createElement('div');
+        cardElement.classList.add('flashcard');
+        cardElement.innerHTML = `
+            <p><strong>${card.word}</strong></p>
+            <p>${card.meaning}</p>
+            <button onclick="deleteCustomFlashcard(${index})">❌ Remove</button>
+        `;
+        container.appendChild(cardElement);
+    });
+}
+
+function deleteCustomFlashcard(index) {
+    customFlashcards.splice(index, 1);
+    displayCustomFlashcards();
+}
+function addCustomFlashcard() {
+    const word = document.getElementById('customWord').value.trim();
+    const meaning = document.getElementById('customMeaning').value.trim();
+
+    if (word === '' || meaning === '') {
+        alert('Please enter both the word and its meaning.');
+        return;
+    }
+
+    // Store the new flashcard
+    customFlashcards.push({ word, meaning });
+
+    // Display the new flashcards
+    displayCustomFlashcards();
+
+    // Clear input fields but prevent auto-focus issues
+    document.getElementById('customWord').value = '';
+    document.getElementById('customMeaning').value = '';
+    document.activeElement.blur(); // Prevents focus from sticking to the inputs
+}
+
+
+
+
+// Initialize the first flashcard
+updateFlashcard();
+
+</script>
+
+
+
